@@ -2,6 +2,7 @@ package main
 
 import (
 	"krm-backend/config"
+	_ "krm-backend/controllers/initcontroller"
 	"krm-backend/middlewares/jwtvalid"
 	"krm-backend/routers"
 

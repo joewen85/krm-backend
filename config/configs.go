@@ -26,6 +26,7 @@ var (
 	MysqlDBName       string
 	MaxIdleConnection int
 	MaxOpenConnection int
+	MetaDataNamespace string
 )
 
 type ReturnData struct {
@@ -58,13 +59,15 @@ func init() {
 	defer logs.Info(nil, "初始化成功")
 	// environment
 	viper.SetDefault("LOG_LEVEL", "debug")
-	viper.SetDefault("PORT", ":8080")
+	viper.SetDefault("PORT", ":8888")
+	viper.SetDefault("METADATA_NAMESPACE", "mgmt")
 	viper.AutomaticEnv()
 
 	// log setting
 	LogLevel = viper.GetString("LOG_LEVEL")
 	Port = viper.GetString("PORT")
 	initLogSetting(LogLevel)
+	MetaDataNamespace = viper.GetString("METADATA_NAMESPACE")
 
 	//	jwt
 	SigningKey = viper.GetString("SECRET_KEY")
