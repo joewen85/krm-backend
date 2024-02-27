@@ -21,7 +21,7 @@ func init() {
 	if err != nil {
 		panic(err.Error())
 	}
-
+	config.InClusterClient = clientset
 	_, err = clientset.CoreV1().Namespaces().Get(context.TODO(), config.MetaDataNamespace, metav1.GetOptions{})
 	if err != nil {
 		// 判断krm运行的命名空间是否存在, 不存在创建

@@ -1,13 +1,16 @@
 package cluster
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"krm-backend/config"
 	"krm-backend/utils/logs"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type ClusterInfo struct {
@@ -22,52 +25,105 @@ type ClusterConfig struct {
 	KuberConfig string `json:"kuberConfig"`
 }
 
+type ClusterStatus struct {
+	ClusterInfo
+	Version string `json:"version"`
+	Status  string `json:"status"`
+}
+
+// 结构体的方法, 判断集群是否可用
+func (c *ClusterConfig) GetClusterStatus() (ClusterStatus, error) {
+	clusterStatus := ClusterStatus{}
+	clusterStatus.ClusterInfo = c.ClusterInfo
+	restconfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(c.KuberConfig))
+	if err != nil {
+		return clusterStatus, err
+	}
+	clientset, err := kubernetes.NewForConfig(restconfig)
+	if err != nil {
+		return clusterStatus, err
+	}
+	serverVersion, err := clientset.Discovery().ServerVersion()
+	if err != nil {
+		return clusterStatus, err
+	}
+	version := serverVersion.String()
+	clusterStatus.Version = version
+	clusterStatus.Status = "Active"
+	return clusterStatus, nil
+}
+
 func GetClusterList(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "get cluster list",
-	})
+	// clusterInfo := ClusterInfo{}
+	returnData := config.NewReturnData()
+	// if err := c.ShouldBindJSON(&clusterInfo); err != nil {
+	// 	logs.Error(map[string]interface{}{"params": clusterInfo}, "获取集群列表失败")
+	// 	returnData.Status = 400
+	// 	returnData.Message = err.Error()
+	// 	c.JSON(http.StatusOK, returnData)
+	// 	return
+	// }
+	listOptions := metav1.ListOptions{}
+	listOptions.LabelSelector = "apps=krm-backend"
+	secretList, err := config.InClusterClient.CoreV1().Secrets(config.MetaDataNamespace).List(context.TODO(), listOptions)
+	if err != nil {
+		logs.Error(nil, "获取集群信息列表错误")
+		returnData.Status = 400
+		returnData.Message = err.Error()
+		c.JSON(http.StatusOK, returnData)
+		return
+	}
+	var clusterList []map[string]string
+
+	for _, v := range secretList.Items {
+		clusterList = append(clusterList, v.Annotations)
+		fmt.Print(clusterList)
+	}
+	returnData.Data["items"] = clusterList
+	c.JSON(http.StatusOK, returnData)
 }
 
 func GetCluster(c *gin.Context) {
 	id := c.Param("id")
+	returnData := config.NewReturnData()
+	clusterObj, err := config.InClusterClient.CoreV1().Secrets(config.MetaDataNamespace).Get(context.TODO(), id, metav1.GetOptions{})
+	if err != nil {
+		logs.Error(map[string]interface{}{"error": err.Error()}, "没有集群数据")
+		returnData.Status = 400
+		returnData.Message = "没有" + id + "资源"
+		c.JSON(http.StatusOK, returnData)
+		return
+	} else {
+		fmt.Print(clusterObj)
+		returnData.Status = 200
+		data := clusterObj.Annotations
+		data["kubeconfig"] = string(clusterObj.Data["KuberConfig"])
+		fmt.Print(data)
+		returnData.Data["item"] = clusterObj.Annotations
+	}
 
-	fmt.Printf("id: %s", id)
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "get cluster detail",
-		"id":  id,
-	})
+	c.JSON(http.StatusOK, returnData)
 }
 
 func PostCluster(c *gin.Context) {
-	clusterConfig := ClusterConfig{}
-	returnData := config.NewReturnData()
-	if err := c.ShouldBindJSON(&clusterConfig); err != nil {
-		fmt.Printf("struck: %v", &clusterConfig)
-		returnData.Status = 400
-		returnData.Message = "集群数据不全" + err.Error()
-		c.JSON(http.StatusOK, returnData)
-		return
-	}
-	logs.Info(map[string]interface{}{"data": clusterConfig}, "请求参数")
-	jsonStr, err := json.Marshal(clusterConfig)
-	if err != nil {
-		logs.Error(map[string]interface{}{"data": clusterConfig}, "结构体转JSON失败")
-	}
-	fmt.Print("json: ", string(jsonStr))
-	returnData.Status = 201
-	returnData.Message = "添加成功"
-	returnData.Data = jsonStr
-	c.JSON(201, returnData)
-
+	CreateOrUpdate(c, "Create")
 }
 
 func UpdateCluster(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "update cluster",
-	})
+	CreateOrUpdate(c, "Update")
 }
 func DeleteCluster(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "delete cluster",
-	})
+	clusterId := c.Param("id")
+	returnData := config.NewReturnData()
+	err := config.InClusterClient.CoreV1().Secrets(config.MetaDataNamespace).Delete(context.TODO(), clusterId, metav1.DeleteOptions{})
+	if err != nil {
+		logs.Error(map[string]interface{}{"clusterID": clusterId, "error": err.Error()}, "删除集群信息失败")
+		returnData.Status = 204
+		returnData.Message = "删除失败"
+	} else {
+		logs.Info(map[string]interface{}{"clusterID": clusterId}, "删除集群信息成功")
+		returnData.Status = 200
+		returnData.Message = "删除成功"
+	}
+	c.JSON(http.StatusOK, returnData)
 }

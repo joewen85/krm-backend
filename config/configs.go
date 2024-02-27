@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -27,6 +28,8 @@ var (
 	MaxIdleConnection int
 	MaxOpenConnection int
 	MetaDataNamespace string
+	// 存储client-go client实例
+	InClusterClient *kubernetes.Clientset
 )
 
 type ReturnData struct {
