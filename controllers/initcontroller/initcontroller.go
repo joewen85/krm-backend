@@ -36,4 +36,15 @@ func init() {
 	inClusterInfo, _ := clientset.Discovery().ServerVersion()
 	logs.Info(map[string]interface{}{"Namespace": config.MetaDataNamespace, "Version": inClusterInfo.GitVersion}, "元数据命名空间初始化成功")
 
+	// 获取集群列表,添加到变量
+	clusterList := make(map[string]string)
+
+	secretList, _ := clientset.CoreV1().Secrets(config.MetaDataNamespace).List(context.TODO(), metav1.ListOptions{})
+	for _, secret := range secretList.Items {
+		clusterID := secret.Name
+		kuberConfig := secret.Data["KuberConfig"]
+		clusterList[clusterID] = string(kuberConfig)
+	}
+	config.ClusterList = clusterList
+	logs.Info(nil, "获取集群列表成功, 已写入config.ClusterList变量中")
 }

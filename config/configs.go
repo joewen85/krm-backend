@@ -30,6 +30,8 @@ var (
 	MetaDataNamespace string
 	// 存储client-go client实例
 	InClusterClient *kubernetes.Clientset
+	// 初始化时读取secret列表存储到这变量
+	ClusterList map[string]string
 )
 
 type ReturnData struct {

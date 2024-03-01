@@ -7,10 +7,9 @@ import (
 )
 
 func NamespaceRouters(r *gin.RouterGroup) {
-	r.GET("/namespace", namespace.GetNamespaceList)
-	r.GET("/namespace/:id", namespace.GetNamespace)
-	r.POST("/namespace", namespace.PostNamespace)
-	r.PUT("/namespace/:id", namespace.UpdateNamespace)
-	r.DELETE("/namespace/:id", namespace.DeleteNamespace)
-
+	r.GET("/namespace", namespace.List)
+	r.GET("/namespace/:name", namespace.Get)
+	r.POST("/namespace/", namespace.Create)
+	r.PUT("/namespace/:name", namespace.Update)
+	r.DELETE("/namespace/:id", namespace.Delete)
 }
