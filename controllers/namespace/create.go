@@ -6,7 +6,6 @@ import (
 	"krm-backend/controllers"
 	"krm-backend/utils/logs"
 
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 
 func Create(c *gin.Context) {
 	returnData := config.NewReturnData()
-	clientSet, baseInfo, err := controllers.BaseInit(c)
+	clientSet, baseInfo, err := controllers.BaseInit(c, nil)
 	if err != nil {
 		logs.Error(map[string]interface{}{"error": err.Error()}, "clientSet错误")
 		returnData.Status = 500
@@ -27,11 +26,6 @@ func Create(c *gin.Context) {
 
 	var resource corev1.Namespace
 	resource.Name = baseInfo.Name
-	if len(baseInfo.Labels) > 1 {
-		for k, v := range baseInfo.Labels {
-			fmt.Print(k, ":", v)
-		}
-	}
 
 	_, err = clientSet.CoreV1().Namespaces().Create(context.TODO(), &resource, metav1.CreateOptions{})
 	if err != nil {

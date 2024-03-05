@@ -2,7 +2,6 @@ package namespace
 
 import (
 	"context"
-	"fmt"
 	"krm-backend/config"
 	"krm-backend/controllers"
 	"krm-backend/utils/logs"
@@ -15,7 +14,7 @@ import (
 
 func Get(c *gin.Context) {
 	returnData := config.NewReturnData()
-	clientSet, baseInfo, err := controllers.BaseInit(c)
+	clientSet, baseInfo, err := controllers.BaseInit(c, nil)
 	if err != nil {
 		logs.Error(map[string]interface{}{"error": err.Error()}, "clientSet错误")
 		returnData.Status = 500
@@ -26,11 +25,6 @@ func Get(c *gin.Context) {
 
 	var resource corev1.Namespace
 	resource.Name = baseInfo.Name
-	if len(baseInfo.Labels) > 1 {
-		for k, v := range baseInfo.Labels {
-			fmt.Print(k, ":", v)
-		}
-	}
 
 	namespace, err := clientSet.CoreV1().Namespaces().Get(context.TODO(), baseInfo.Name, metav1.GetOptions{})
 	if err != nil {

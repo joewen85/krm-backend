@@ -12,14 +12,15 @@ import (
 
 // 基础结构
 type BaseInfo struct {
-	ClusterId string            `json:"clusterid" form:"clusterid"`
-	Namespace string            `json:"namespace" form:"namespace"`
-	Name      string            `json:"name" form:"name"`
-	Labels    map[string]string `json:"labels" form:"labels"`
+	ClusterId string      `json:"clusterid" form:"clusterid"`
+	Namespace string      `json:"namespace" form:"namespace"`
+	Name      string      `json:"name" form:"name"`
+	Item      interface{} `json:"item"`
 }
 
-func BaseInit(c *gin.Context) (clientSet *kubernetes.Clientset, baseinfo BaseInfo, err error) {
-	var baseInfo = BaseInfo{}
+func BaseInit(c *gin.Context, item interface{}) (clientSet *kubernetes.Clientset, baseinfo BaseInfo, err error) {
+	baseInfo := BaseInfo{}
+	baseInfo.Item = item
 	if c.Request.Method == "GET" {
 		// shouldBindQuery需要在结构体内添加form注解,否则无法绑定
 		err = c.ShouldBindQuery(&baseInfo)

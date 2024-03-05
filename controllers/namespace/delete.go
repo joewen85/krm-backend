@@ -12,7 +12,7 @@ import (
 )
 
 func Delete(c *gin.Context) {
-	clientSet, baseInfo, err := controllers.BaseInit(c)
+	clientSet, baseInfo, err := controllers.BaseInit(c, nil)
 	returnData := config.NewReturnData()
 	if err != nil {
 		returnData.Status = 500
