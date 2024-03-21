@@ -19,7 +19,7 @@ func JwtValid(c *gin.Context) {
 	}
 	token := c.Request.Header.Get("Authorization")
 	if token == "" {
-		returnData.Status = 200401
+		returnData.Status = 401
 		returnData.Message = "无登陆"
 		c.JSON(http.StatusOK, returnData)
 		c.Abort()
@@ -27,7 +27,7 @@ func JwtValid(c *gin.Context) {
 	}
 	claims, err := jwtauth.ParseJwt(token)
 	if err != nil {
-		returnData.Status = 200401
+		returnData.Status = 401
 		returnData.Message = "token不合法"
 		c.JSON(http.StatusOK, returnData)
 		c.Abort()
