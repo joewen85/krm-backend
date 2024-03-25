@@ -2,6 +2,7 @@ package routers
 
 import (
 	"krm-backend/routers/cluster"
+	"krm-backend/routers/configmap"
 	"krm-backend/routers/deployment"
 	"krm-backend/routers/namespace"
 	"krm-backend/routers/pod"
@@ -19,4 +20,5 @@ func RegisterRouters(r *gin.Engine) {
 	pod.PodRouters(apiGroup)
 	deployment.DeploymentRouters(apiGroup)
 	service.ServiceRouters(apiGroup)
+	configmap.ConfigMapRouters(apiGroup)
 }

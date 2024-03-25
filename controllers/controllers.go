@@ -26,6 +26,7 @@ type Info struct {
 	ReturnData    config.ReturnData
 	LabelSelector string `json:"labelselector"`
 	FieldSelector string `json:"fieldselector"`
+	Force         bool   `json:"force" form:"force"`
 }
 
 func NewInfo(c *gin.Context, info *Info, returnDataMsg string) (kuberconfig string) {
@@ -76,10 +77,14 @@ func (i *Info) Update(c *gin.Context, kubeUtilInterface kubeutils.KubeUtilsInter
 
 func (i *Info) Delete(c *gin.Context, kubeUtilInterface kubeutils.KubeUtilsInterface) {
 	var err error
+	var gracePeriodSeconds int64
+	if i.Force {
+		gracePeriodSeconds = 0
+	}
 	if i.DeleteList == nil {
-		err = kubeUtilInterface.Delete(i.Namespace, i.Name, nil)
+		err = kubeUtilInterface.Delete(i.Namespace, i.Name, &gracePeriodSeconds)
 	} else {
-		err = kubeUtilInterface.DeleteList(i.Namespace, i.DeleteList, nil)
+		err = kubeUtilInterface.DeleteList(i.Namespace, i.DeleteList, &gracePeriodSeconds)
 	}
 
 	if err != nil {

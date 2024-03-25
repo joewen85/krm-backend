@@ -18,7 +18,7 @@ func NewDeployment(kubecofig string, item *appsv1.Deployment) *Deployment {
 	// 调用实例化kubeutils中的ResourceInstance并调用init, 配置默认值和生成clientset
 	instance := ResourceInstance{}
 	instance.Init(kubecofig)
-	// 定义pod实例
+	// 定义deployment实例
 	resource := Deployment{}
 	resource.InstanceInterface = instance.ClientSet.AppsV1()
 	resource.Item = item
@@ -60,14 +60,14 @@ func (p *Deployment) List(namespace, labelSelector, fieldSelector string) (items
 	var listOptions metav1.ListOptions
 	listOptions.LabelSelector = labelSelector
 	listOptions.FieldSelector = fieldSelector
-	podList, err := p.InstanceInterface.Deployments(namespace).List(context.TODO(), listOptions)
-	items = podList.Items
+	deploymentList, err := p.InstanceInterface.Deployments(namespace).List(context.TODO(), listOptions)
+	items = deploymentList.Items
 	return items, err
 }
 
 func (p *Deployment) Get(namespace, name string) (item interface{}, err error) {
 	logs.Info(map[string]interface{}{"名称": name, "命名空间": namespace}, "Deployment对象")
-	pod, err := p.InstanceInterface.Deployments(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	item = pod
+	deployment, err := p.InstanceInterface.Deployments(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	item = deployment
 	return item, err
 }
