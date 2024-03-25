@@ -5,6 +5,7 @@ import (
 	"krm-backend/routers/deployment"
 	"krm-backend/routers/namespace"
 	"krm-backend/routers/pod"
+	"krm-backend/routers/service"
 	"krm-backend/routers/user"
 
 	"github.com/gin-gonic/gin"
@@ -17,4 +18,5 @@ func RegisterRouters(r *gin.Engine) {
 	namespace.NamespaceRouters(apiGroup)
 	pod.PodRouters(apiGroup)
 	deployment.DeploymentRouters(apiGroup)
+	service.ServiceRouters(apiGroup)
 }
