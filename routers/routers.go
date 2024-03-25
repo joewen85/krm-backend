@@ -3,6 +3,7 @@ package routers
 import (
 	"krm-backend/routers/cluster"
 	"krm-backend/routers/configmap"
+	"krm-backend/routers/daemonset"
 	"krm-backend/routers/deployment"
 	"krm-backend/routers/namespace"
 	"krm-backend/routers/pod"
@@ -25,4 +26,5 @@ func RegisterRouters(r *gin.Engine) {
 	configmap.ConfigMapRouters(apiGroup)
 	secret.SecretRouters(apiGroup)
 	statefulset.StateFulSetRouters(apiGroup)
+	daemonset.DaemonsetRouters(apiGroup)
 }
